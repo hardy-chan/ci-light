@@ -1,11 +1,12 @@
-name: Lightweight CI/CD Pipeline
+name: Lightweight Dockerized CI Pipeline
 
 on: [push]
 
 jobs:
-  ci-cd-pipeline:
+  ci-container-pipeline:
     runs-on: ubuntu-latest
     steps:
+      # CI
       - name: Fetch Code from Repository
         uses: actions/checkout@v4
 
@@ -14,16 +15,16 @@ jobs:
         with:
           node-version: 20
 
-      - name: Install Application Dependencies
-        run: npm install
+      - name: Install and Run Native Tests
+        run: |
+          npm install
+          npm test
 
-      - name: Execute Automated Unit Tests
-        run: npm test
+      # DOCKER INTEGRATION
+      - name: Compile and Build Docker Container Image
+        run: |
+          docker build -t ci-light-engine:latest .
 
-      - name: Deploy Live to Vercel Production Server
-        uses: amondnet/vercel-action@latest
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          vercel-args: '--prod'
+      - name: Verify Container Safety and Execution
+        run: |
+          docker run --rm ci-light-engine:latest npm test
