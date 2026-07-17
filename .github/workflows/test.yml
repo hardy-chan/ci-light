@@ -1,9 +1,9 @@
-name: Lightweight Dockerized CI Pipeline
+name: Lightweight Dockerized CI/CD Pipeline
 
 on: [push]
 
 jobs:
-  ci-container-pipeline:
+  ci-cd-container-pipeline:
     runs-on: ubuntu-latest
     steps:
       # CI
@@ -20,11 +20,22 @@ jobs:
           npm install
           npm test
 
-      # DOCKER INTEGRATION
+      # CONTAINER VALIDATION (CI)
       - name: Compile and Build Docker Container Image
         run: |
-          docker build -t ci-light-engine:latest .
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/ci-light-engine:latest .
 
       - name: Verify Container Safety and Execution
         run: |
-          docker run --rm ci-light-engine:latest npm test
+          docker run --rm ${{ secrets.DOCKERHUB_USERNAME }}/ci-light-engine:latest npm test
+
+      # CD
+      - name: Authenticate with Enterprise Container Registry
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKER_ACCESS_TOKEN }}
+
+      - name: Push Container Live to Production Registry
+        run: |
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/ci-light-engine:latest
