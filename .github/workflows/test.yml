@@ -2,6 +2,10 @@ name: Lightweight Dockerized CI/CD Pipeline
 
 on: [push]
 
+# Force JS actions to use Node.js 24 runtime environment
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   ci-cd-container-pipeline:
     runs-on: ubuntu-latest
